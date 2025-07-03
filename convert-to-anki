@@ -1,0 +1,142 @@
+#!/usr/bin/python
+
+# pylint: disable=invalid-name
+
+"""
+Script for converting from TOML format to Anki flashcards.
+"""
+
+import asyncio
+import os
+import sys
+
+from config import TomlConfig
+from web import scrape
+
+
+def walk_all_files(path: str) -> TomlConfig | None:
+    """
+    Walk all files in the given directory and create a TOML config handle.
+    """
+    toml = None
+    for dirpath, _, files in os.walk(path):
+        for file in files:
+            if toml is None:
+                toml = TomlConfig(os.path.join(dirpath, file))
+            else:
+                toml.extend(TomlConfig(os.path.join(dirpath, file)))
+
+    return toml
+
+
+def load_file(path: str) -> TomlConfig | None:
+    """
+    Create a TOML config handle from a single file.
+    """
+    return TomlConfig(path)
+
+
+def scrape_all_charts(
+    config: TomlConfig | None,
+) -> dict[str, str | None]:
+    """
+    Scrape all charts for flashcards to be converted.
+    """
+    if config is not None:
+        return asyncio.run(scrape(config.get_lang(), config.get_words()))
+
+    return {}
+
+
+def generate_table(charts: list[list[list[str]]] | None) -> str:
+    """
+    Generate HTML table from scraped charts.
+    """
+    html = ""
+    if charts is not None:
+        for chart in charts:
+            chart_str = "<table>"
+            for row in chart:
+                row_str = "<tr>"
+                for entry in row:
+                    row_str += f"<td>{entry}</td>"
+                row_str += "</tr>"
+                chart_str += row_str
+            chart_str += "</table><br><br>"
+            html += chart_str
+
+    return html
+
+
+def generate_flashcards(name, config, scraped):
+    """
+    Generate flashcard import file.
+    """
+    file_contents = "#separator:tab\n#html:true"
+    for word in config.get_words():
+        entry_str = "\t".join(
+            [
+                f"card-{config.get_lang()}-{word.get_word()}-{word.get_definition()}",
+                f"<h1>Word</h1><br>{word.get_word()}<br>",
+                f"<h1>Definition</h1><br>{word.get_definition()}<br>",
+                (
+                    f"<h1>Usage</h1><br>{word.get_usage()}<br>"
+                    if word.get_usage() is not None
+                    else ""
+                ),
+                (
+                    f"<h1>Part of speech</h1><br>{word.get_part_of_speech()}<br>"
+                    if word.get_part_of_speech() is not None
+                    else ""
+                ),
+                (
+                    f"<h1>Gender</h1><br>{word.get_gender()}<br>"
+                    if word.get_gender() is not None
+                    else ""
+                ),
+                (
+                    f"<h1>Aspect</h1><br>{word.get_aspect()}<br>"
+                    if word.get_aspect() is not None
+                    else ""
+                ),
+                (
+                    generate_table(word.get_charts())
+                    if word.get_charts() is not None
+                    else scraped.get(word.get_word(), "")
+                ),
+            ]
+        )
+        file_contents += "\n" + entry_str
+
+    with open(f"{name}.txt", "w", encoding="utf8") as f:
+        f.write(file_contents)
+
+
+def main():
+    """
+    Main function
+    """
+    if len(sys.argv) < 3:
+        print("USAGE: convert-to-anki <DECK_NAME> <PATH_TO_FILE_OR_DIR>")
+        return
+
+    name = sys.argv[1]
+    if name == "":
+        print("Argument must be a non-empty string")
+        return
+
+    path_to_files = sys.argv[2]
+    if not os.path.isabs(path_to_files):
+        print("Argument must be a directory or file with an absolute path")
+        return
+
+    if os.path.isdir(path_to_files):
+        config = walk_all_files(path_to_files)
+    else:
+        config = load_file(path_to_files)
+    all_charts = scrape_all_charts(config)
+    generate_flashcards(name, config, all_charts)
+
+
+if __name__ == "__main__":
+    main()
