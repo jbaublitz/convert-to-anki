@@ -8,7 +8,7 @@ import aiohttp
 from bs4 import BeautifulSoup
 
 from config import Entry
-from web import fr, ru, uk
+from web import fr, ru, uk, es
 
 URL = "https://en.wiktionary.org/wiki/"
 
@@ -31,6 +31,8 @@ async def fetch(
 
             if lang == "fr":
                 return (word, fr.parse(html))
+            if lang == "es":
+                return (word, es.parse(html))
             if lang == "ru":
                 return (word, ru.parse(html))
             if lang == "uk":
