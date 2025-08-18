@@ -145,4 +145,6 @@ class TomlConfig(Config):
                 ]
                 super().__init__(file_path, lang, words)
         except KeyError as err:
-            raise RuntimeError(f"Key {err} not found") from err
+            raise RuntimeError(f"{file_path}: Key {err} not found") from err
+        except Exception as err:
+            raise RuntimeError(f"{file_path}: {err}") from err
