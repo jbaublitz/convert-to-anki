@@ -23,7 +23,8 @@ async def fetch(
         return None
 
     try:
-        async with session.get(URL + word.replace("\u0301", "")) as response:
+        headers = {"User-Agent": "convert-to-anki (https://github.com/jbaublitz/convert-to-anki)" }
+        async with session.get(URL + word.replace("\u0301", ""), headers=headers) as response:
             if response.status == 404:
                 return None
             text = await response.text()
