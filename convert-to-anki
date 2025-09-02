@@ -38,7 +38,7 @@ def load_file(path: str) -> TomlConfig | None:
 
 def scrape_all_charts(
     config: TomlConfig | None,
-) -> dict[str, str | None]:
+) -> dict[str, str]:
     """
     Scrape all charts for flashcards to be converted.
     """

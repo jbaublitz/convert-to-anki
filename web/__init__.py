@@ -2,11 +2,13 @@
 Handles web scraping.
 """
 
+import os
 import asyncio
 
 import aiohttp
 from bs4 import BeautifulSoup
 
+from cache import add_to_cache, get_from_cache
 from config import Entry
 from web import fr, ru, uk, es
 
@@ -22,32 +24,44 @@ async def fetch(
     if lang is None:
         return None
 
-    try:
-        headers = {"User-Agent": "convert-to-anki (https://github.com/jbaublitz/convert-to-anki)" }
-        async with session.get(URL + word.replace("\u0301", ""), headers=headers) as response:
+    url = URL + word.replace("\u0301", "")
+    cached = get_from_cache(url)
+    if cached is None:
+        user = os.environ["USER"]
+        headers = {
+            "User-Agent": f"convert-to-anki, user {user} (https://github.com/jbaublitz/convert-to-anki)"
+        }
+        async with session.get(url, headers=headers) as response:
             if response.status == 404:
                 return None
+            if response.status != 200:
+                raise RuntimeError(
+                    f"Received HTTP code {response.status}: {response.reason}"
+                )
             text = await response.text()
-            html = BeautifulSoup(text, "html.parser")
+            add_to_cache(url, text)
+    else:
+        text = cached
 
-            if lang == "fr":
-                return (word, fr.parse(html))
-            if lang == "es":
-                return (word, es.parse(html))
-            if lang == "ru":
-                return (word, ru.parse(html))
-            if lang == "uk":
-                return (word, uk.parse(html))
+    html = BeautifulSoup(text, "html.parser")
 
-            return None
-    except Exception as err:
-        raise RuntimeError(f"Error fetching word {word}") from err
+    if lang == "fr":
+        return (word, fr.parse(html))
+    if lang == "es":
+        return (word, es.parse(html))
+    if lang == "ru":
+        return (word, ru.parse(html))
+    if lang == "uk":
+        return (word, uk.parse(html))
+
+    return None
 
 
-async def scrape(lang: str | None, words: list[Entry]) -> dict[str, str | None]:
+async def scrape(lang: str | None, words: list[Entry]) -> dict[str, str]:
     """
     Fetch all words asynchronously.
     """
+
     async with aiohttp.ClientSession() as session:
         ret = await asyncio.gather(
             *[fetch(session, word.get_word(), lang) for word in words]
