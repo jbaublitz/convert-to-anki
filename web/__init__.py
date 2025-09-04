@@ -33,6 +33,7 @@ async def fetch(
         }
         async with session.get(url, headers=headers) as response:
             if response.status == 404:
+                add_to_cache(url, "")
                 return None
             if response.status != 200:
                 raise RuntimeError(
@@ -41,6 +42,8 @@ async def fetch(
             text = await response.text()
             add_to_cache(url, text)
     else:
+        if cached == "":
+            return None
         text = cached
 
     html = BeautifulSoup(text, "html.parser")
