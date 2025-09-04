@@ -27,6 +27,7 @@ async def fetch(
     url = URL + word.replace("\u0301", "")
     cached = get_from_cache(url)
     if cached is None:
+        print(f"Fetching html for URL {url}")
         user = os.environ["USER"]
         headers = {
             "User-Agent": f"convert-to-anki, user {user} (https://github.com/jbaublitz/convert-to-anki)"
@@ -42,6 +43,7 @@ async def fetch(
             text = await response.text()
             add_to_cache(url, text)
     else:
+        print(f"Getting cache for URL {url}")
         if cached == "":
             return None
         text = cached
