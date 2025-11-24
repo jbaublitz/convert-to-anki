@@ -10,7 +10,9 @@ def parse(html: BeautifulSoup) -> str:
     Parse HTML returned from web request for a French word.
     """
     all_tables = html.find_all("table")
-    tables = [table for table in all_tables if table.findAll("span", {"lang": "es"}) != []]
+    tables = [
+        table for table in all_tables if table.findAll("span", {"lang": "es"}) != []
+    ]
 
     html_str = "<br>".join(list(map(lambda html: str(html), tables)))
 
