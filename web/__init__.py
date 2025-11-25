@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 
 from cache import add_to_cache, get_from_cache
 from config import Entry
-from web import fr, ru, uk, es
+from web import fr, ro, ru, uk, es
 
 URL = "https://en.wiktionary.org/wiki/"
 
@@ -54,6 +54,8 @@ async def fetch(
         return (word, fr.parse(html))
     if lang == "es":
         return (word, es.parse(html))
+    if lang == "ro":
+        return (word, ro.parse(html))
     if lang == "ru":
         return (word, ru.parse(html))
     if lang == "uk":
