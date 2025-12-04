@@ -38,7 +38,7 @@ def load_file(path: str) -> TomlConfig | None:
 
 def scrape_all_charts(
     config: TomlConfig | None,
-) -> dict[str, str]:
+) -> dict[str, str | tuple[str, str]]:
     """
     Scrape all charts for flashcards to be converted.
     """
@@ -72,12 +72,23 @@ def generate_flashcards(name, config, scraped):
     """
     Generate flashcard import file.
     """
+
     file_contents = "#separator:tab\n#html:true"
     for word in config.get_words():
+        scraped_for_word = scraped.get(word.get_word(), None)
+        ipa = ""
+        charts = ""
+        if isinstance(scraped_for_word, str):
+            charts = scraped_for_word if scraped_for_word is not None else ""
+        elif isinstance(scraped_for_word, tuple):
+            (ipa, charts) = (
+                scraped_for_word if scraped_for_word is not None else ("", "")
+            )
+
         entry_str = "\t".join(
             [
                 f"card-{config.get_lang()}-{word.get_word()}-{word.get_definition()}",
-                f"<h1>Word</h1><br>{word.get_word()}<br>",
+                f"<h1>Word</h1><br>{word.get_word()}<br><ul>{"".join(ipa)}</ul><br>",
                 f"<h1>Definition</h1><br>{word.get_definition()}<br>",
                 (
                     f"<h1>Usage</h1><br>{word.get_usage()}<br>"
@@ -102,7 +113,7 @@ def generate_flashcards(name, config, scraped):
                 (
                     generate_table(word.get_charts())
                     if word.get_charts() is not None
-                    else scraped.get(word.get_word(), "")
+                    else charts
                 ),
             ]
         )
