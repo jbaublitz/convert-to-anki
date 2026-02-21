@@ -15,13 +15,33 @@ def parse(html: BeautifulSoup) -> str:
 
     rows = []
 
-    comparative = html.find_all("b", {"class": "comparative-form-of"})
+    comparative = html.find_all(
+        lambda tag: tag.name == "i" and "comparative" in tag.text
+    )
     if comparative:
-        rows.extend([comp.text for comp in comparative])
+        rows.extend(
+            [
+                comp.find_next_sibling().text
+                for comp in comparative
+                if comp is not None
+                and comp.find_next_sibling() is not None
+                and comp.find_next_sibling()["lang"] == "uk"
+            ]
+        )
 
-    superlative = html.find_all("b", {"class": "superlative-form-of"})
+    superlative = html.find_all(
+        lambda tag: tag.name == "i" and "superlative" in tag.text
+    )
     if superlative:
-        rows.extend([sup.text for sup in superlative])
+        rows.extend(
+            [
+                sup.find_next_sibling().text
+                for sup in superlative
+                if sup is not None
+                and sup.find_next_sibling() is not None
+                and sup.find_next_sibling()["lang"] == "uk"
+            ]
+        )
 
     if rows:
         html_str += "<br>" + ", ".join(rows)
