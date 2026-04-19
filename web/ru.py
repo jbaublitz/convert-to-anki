@@ -11,7 +11,7 @@ def parse(html: BeautifulSoup) -> str:
     """
     all_tables = html.find_all("table", {"class": "inflection-table"})
     tables = [table for table in all_tables if table.select(".lang-ru") != []]
-    html_str = "<br>".join(list(map(lambda html: str(html), tables)))
+    html_str = "<br>".join(list(map(str, tables)))
 
     rows = []
 

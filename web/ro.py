@@ -10,16 +10,19 @@ def parse(html: BeautifulSoup) -> tuple[list[str], str]:
     Parse HTML returned from web request for a Russian word.
     """
     header = html.find("h2", {"id": "Romanian"})
-    nxt = header.parent.find_next_sibling()
-    ipa = None
-    while True:
-        if nxt is not None:
-            ipa = [str(tag.parent) for tag in nxt.find_all("span", {"class": "IPA"})]
-            if ipa:
+    ipa = []
+    if header is not None:
+        nxt = header.find_next_sibling()
+        while True:
+            if nxt is not None:
+                ipa = [
+                    str(tag.parent) for tag in nxt.find_all("span", {"class": "IPA"})
+                ]
+                if ipa:
+                    break
+                nxt = nxt.find_next_sibling()
+            else:
                 break
-            nxt = nxt.find_next_sibling()
-        else:
-            break
 
     all_tables = html.find_all("table", {"class": "inflection-table"})
     tables = [
@@ -27,9 +30,9 @@ def parse(html: BeautifulSoup) -> tuple[list[str], str]:
         for table in all_tables
         if table.select(".lang-ro") != [] or table.select('[lang="ro"]')
     ]
-    html_str = "<br>".join(list(map(lambda html: str(html), tables)))
+    html_str = "<br>".join(list(map(str, tables)))
 
     verbs = html.find_all("table", {"class": "roa-inflection-table"})
-    html_str += "<br>".join(list(map(lambda html: str(html), verbs)))
+    html_str += "<br>".join(list(map(str, verbs)))
 
     return (ipa, html_str.replace("\n", ""))

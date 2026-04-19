@@ -14,6 +14,12 @@ def parse(html: BeautifulSoup) -> str:
         table for table in all_tables if table.findAll("span", {"lang": "es"}) != []
     ]
 
-    html_str = "<br>".join(list(map(lambda html: str(html), tables)))
+    html_str = ""
+    if tables == []:
+        plural_forms = html.select(".form-of.lang-es")
+        if plural_forms:
+            html_str += ", ".join([form.text for form in plural_forms])
+    else:
+        html_str += "<br>".join(list(map(str, tables)))
 
     return html_str.replace("\n", "")

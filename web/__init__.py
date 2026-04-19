@@ -17,7 +17,7 @@ URL = "https://en.wiktionary.org/wiki/"
 
 async def fetch(
     session: aiohttp.ClientSession, word: str, lang: str | None
-) -> tuple[str, str | tuple[str, str]] | None:
+) -> tuple[str, str | tuple[list[str], str]] | None:
     """
     Fetch individual word asynchronously.
     """

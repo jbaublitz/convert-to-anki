@@ -14,10 +14,10 @@ def parse(html: BeautifulSoup) -> str:
 
     html_str = ""
     if tables == []:
-        adj_forms = html.select(".form-of.lang-fr")
-        if adj_forms:
-            html_str += ", ".join([form.text for form in adj_forms])
+        plural_forms = html.select(".form-of.lang-fr")
+        if plural_forms:
+            html_str += ", ".join([form.text for form in plural_forms])
     else:
-        html_str += "<br>".join(list(map(lambda html: str(html), tables)))
+        html_str += "<br>".join(list(map(str, tables)))
 
     return html_str.replace("\n", "")
