@@ -25,7 +25,7 @@ def parse(html: BeautifulSoup) -> str:
                 for comp in comparative
                 if comp is not None
                 and comp.find_next_sibling() is not None
-                and comp.find_next_sibling()["lang"] == "uk"
+                and comp.find_next_sibling().get("lang", None) == "uk"
             ]
         )
 
@@ -39,7 +39,7 @@ def parse(html: BeautifulSoup) -> str:
                 for sup in superlative
                 if sup is not None
                 and sup.find_next_sibling() is not None
-                and sup.find_next_sibling()["lang"] == "uk"
+                and sup.find_next_sibling().get("lang", None) == "uk"
             ]
         )
 

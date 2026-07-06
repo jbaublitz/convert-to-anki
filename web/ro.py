@@ -5,7 +5,7 @@ Parsing for Romanian language grammar charts.
 from bs4 import BeautifulSoup
 
 
-def parse(html: BeautifulSoup) -> tuple[list[str], str]:
+def parse(html: BeautifulSoup, word: str) -> tuple[list[str], str]:
     """
     Parse HTML returned from web request for a Russian word.
     """
@@ -34,5 +34,9 @@ def parse(html: BeautifulSoup) -> tuple[list[str], str]:
 
     verbs = html.find_all("table", {"class": "roa-inflection-table"})
     html_str += "<br>".join(list(map(str, verbs)))
+
+    html_str += (
+        '<iframe src="https://dexonline.ro/definitie/' + word + '/paradigma"></iframe>'
+    )
 
     return (ipa, html_str.replace("\n", ""))
