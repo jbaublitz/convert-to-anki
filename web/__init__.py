@@ -55,7 +55,7 @@ async def fetch(
     if lang == "es":
         return (word, es.parse(html))
     if lang == "ro":
-        return (word, ro.parse(html))
+        return (word, ro.parse(html, word))
     if lang == "ru":
         return (word, ru.parse(html))
     if lang == "uk":
