@@ -43,6 +43,20 @@ def parse(html: BeautifulSoup) -> str:
             ]
         )
 
+    relational_adjective = html.find_all(
+        lambda tag: tag.name == "i" and "relational adjective" in tag.text
+    )
+    if relational_adjective:
+        rows.extend(
+            [
+                rel_adj.find_next_sibling().text
+                for rel_adj in relational_adjective
+                if rel_adj is not None
+                and rel_adj.find_next_sibling() is not None
+                and rel_adj.find_next_sibling().get("lang", None) == "uk"
+            ]
+        )
+
     if rows:
         html_str += "<br>" + ", ".join(rows)
 
